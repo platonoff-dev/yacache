@@ -1,0 +1,26 @@
+run:
+  timeout: 1m
+  go: "1.21"
+  allow-parallel-runners: true
+
+issues:
+  max-same-issues: 0
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - cyclop
+    - errcheck
+    - errname
+    - gosimple
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - funlen
+    - gocritic
+    - gomnd
+    - goimports
+    - gofmt
+    - nestif
