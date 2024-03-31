@@ -42,8 +42,7 @@ func handleConnection(connection net.Conn) {
 
 		fmt.Printf("Received %d bytes: %s\n", n, buf[:n])
 
-		parser := protocol.NewParser(buf[:n])
-		message, err := parser.ParseMessage()
+		message, err := protocol.Parse(buf[:n])
 		if err != nil {
 			connection.Write([]byte(fmt.Sprintf("-ERR %s", err)))
 			break

@@ -26,10 +26,10 @@ func NewCommand(message interface{}) (*Command, error) {
 		return nil, ErrNotCommand
 	}
 
-	commandName := rawCommand[0]
-	if !ok {
-		return nil, ErrInvalidCommandType
+	if len(rawCommand) == 0 {
+		return nil, ErrNotCommand
 	}
+	commandName := rawCommand[0]
 
 	switch commandName {
 	case PingCommand:

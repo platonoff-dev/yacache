@@ -49,7 +49,7 @@ func TestParser_ParseMessage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			p := NewParser(tt.data)
 
-			result, err := p.ParseMessage()
+			result, err := p.parseMessage()
 
 			assert.DeepEqual(t, tt.expected, result)
 			assert.DeepEqual(t, tt.err, err)

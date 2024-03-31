@@ -6,6 +6,10 @@ import (
 	"strconv"
 )
 
+const (
+	terminator = "\r\n"
+)
+
 type UnknownTypeIdentifierError struct {
 	Identifier byte
 }
@@ -26,10 +30,6 @@ func NewParser(data []byte) parser {
 	}
 }
 
-func (p *parser) peek(n int) []byte {
-	return p.data[p.pos : p.pos+n-1]
-}
-
 func (p *parser) parseLength() (int, error) {
 	currentPos := p.pos
 	for !bytes.Equal(p.data[currentPos:currentPos+2], []byte("\r\n")) {
@@ -41,7 +41,7 @@ func (p *parser) parseLength() (int, error) {
 		return 0, err
 	}
 
-	p.pos = currentPos + 2
+	p.pos = currentPos + len(terminator)
 	return length, nil
 }
 
@@ -55,7 +55,7 @@ func (p *parser) parseArray() ([]interface{}, error) {
 	arr := make([]interface{}, length)
 
 	for i := 0; i < length; i++ {
-		msg, err := p.ParseMessage()
+		msg, err := p.parseMessage()
 		if err != nil {
 			return nil, err
 		}
@@ -74,11 +74,11 @@ func (p *parser) parseBulkString() (string, error) {
 	}
 
 	str := string(p.data[p.pos : p.pos+length])
-	p.pos += length + 2
+	p.pos += length + len(terminator)
 	return str, nil
 }
 
-func (p *parser) ParseMessage() (interface{}, error) {
+func (p *parser) parseMessage() (interface{}, error) {
 	dataTypeidentifier := p.data[p.pos]
 	p.pos += 1
 
@@ -92,4 +92,9 @@ func (p *parser) ParseMessage() (interface{}, error) {
 	default:
 		return nil, &UnknownTypeIdentifierError{p.data[p.pos-1]}
 	}
+}
+
+func Parse(data []byte) (interface{}, error) {
+	parser := NewParser(data)
+	return parser.parseMessage()
 }
