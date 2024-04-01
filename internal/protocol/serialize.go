@@ -24,7 +24,7 @@ func Serialize(data interface{}) ([]byte, error) {
 	case int:
 		value := strconv.FormatInt(int64(v), 10)
 		result = fmt.Sprintf("%c%s%s", IntegerIdentifier, value, terminator)
-	case float64:
+	case float64, float32:
 		result = fmt.Sprintf("%c%f%s", FloatIdentifier, v, terminator)
 	case bool:
 		value := 'f'

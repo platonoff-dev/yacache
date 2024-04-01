@@ -50,13 +50,13 @@ func handleConnection(connection net.Conn) {
 
 		command, err := commands.NewCommand(message)
 		if err != nil {
-			connection.Write([]byte(fmt.Sprintln("-ERR falied to parse command: %s")))
+			connection.Write([]byte(fmt.Sprintf("-ERR falied to parse command: %s", err)))
 			break
 		}
 
 		result, err := engine.ExecuteCommand(command)
 		if err != nil {
-			connection.Write([]byte(fmt.Sprintln("-ERR falied to execute command: %s")))
+			connection.Write([]byte(fmt.Sprintf("-ERR falied to execute command: %s", err)))
 			break
 		}
 		connection.Write([]byte(result))
