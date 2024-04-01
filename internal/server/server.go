@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
 
 	"github.com/platonoff-dev/yacache/internal/engine"
 	"github.com/platonoff-dev/yacache/internal/engine/commands"
@@ -20,6 +22,13 @@ func StartServer() {
 	if err != nil {
 		panic(err)
 	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		os.Exit(0)
+	}()
 
 	for {
 		connection, err := listener.Accept()

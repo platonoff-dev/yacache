@@ -13,10 +13,13 @@ var (
 )
 
 type Engine struct {
+	db map[string]string
 }
 
 func New() Engine {
-	return Engine{}
+	return Engine{
+		db: map[string]string{},
+	}
 }
 
 func (e *Engine) ExecuteCommand(command commands.Command) (any, error) {
@@ -29,6 +32,10 @@ func (e *Engine) ExecuteCommand(command commands.Command) (any, error) {
 		return e.ping(command)
 	case commands.EchoIdentifier:
 		return e.echo(command)
+	case commands.SetIdentifier:
+		return e.set(command)
+	case commands.GetIdentifier:
+		return e.get(command)
 	default:
 		return nil, ErrUnsuppportedCommand
 	}
@@ -54,4 +61,28 @@ func (e *Engine) echo(command commands.Command) (string, error) {
 	}
 
 	return cmd.Message, nil
+}
+
+func (e *Engine) set(command commands.Command) (string, error) {
+	cmd, err := commands.NewSet(command)
+	if err != nil {
+		return "", err
+	}
+
+	e.db[cmd.Key] = cmd.Value
+	return "OK", nil
+}
+
+func (e *Engine) get(command commands.Command) (any, error) {
+	cmd, err := commands.NewGet(command)
+	if err != nil {
+		return nil, err
+	}
+
+	value, ok := e.db[cmd.Key]
+	if !ok {
+		return nil, nil
+	}
+
+	return value, nil
 }
