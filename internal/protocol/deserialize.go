@@ -23,7 +23,7 @@ type parser struct {
 	pos  int
 }
 
-func NewParser(data []byte) parser {
+func newParser(data []byte) parser {
 	return parser{
 		data: data,
 		pos:  0,
@@ -95,6 +95,6 @@ func (p *parser) parseMessage() (any, error) {
 }
 
 func Parse(data []byte) (any, error) {
-	parser := NewParser(data)
+	parser := newParser(data)
 	return parser.parseMessage()
 }

@@ -1,12 +1,17 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net"
 
-	"github.com/platonoff-dev/yacache/internal/commands"
 	"github.com/platonoff-dev/yacache/internal/engine"
+	"github.com/platonoff-dev/yacache/internal/engine/commands"
 	"github.com/platonoff-dev/yacache/internal/protocol"
+)
+
+const (
+	BufferSize = 1024
 )
 
 func StartServer() {
@@ -20,7 +25,7 @@ func StartServer() {
 		connection, err := listener.Accept()
 		fmt.Printf("Accepted connection from %s\n", connection.RemoteAddr())
 		if err != nil {
-			fmt.Errorf("Error accepting connection: %s", err)
+			fmt.Printf("Error accepting connection: %s", err)
 			continue
 		}
 
@@ -28,15 +33,49 @@ func StartServer() {
 	}
 }
 
+func response(connection net.Conn, data any) {
+	message, err := protocol.Serialize(data)
+	if err != nil {
+		fmt.Printf("failed to build response message: %s\n", err)
+		return
+	}
+
+	_, err = connection.Write(message)
+	if err != nil {
+		fmt.Printf("failed to write response: %s\n", err)
+	}
+}
+
+func parseCommand(message any) (commands.Command, error) {
+	var command []string
+
+	rawCommand, ok := message.([]any)
+	if !ok {
+		return nil, errors.New("message is not and array")
+	}
+
+	for _, rawPart := range rawCommand {
+		part, ok := rawPart.(string)
+		if !ok {
+			return nil, fmt.Errorf("not a string: %v", rawPart)
+		}
+
+		command = append(command, part)
+	}
+
+	return command, nil
+}
+
 func handleConnection(connection net.Conn) {
 	defer connection.Close()
 
-	buf := make([]byte, 1024)
+	buf := make([]byte, BufferSize)
+	engine := engine.New()
 
 	for {
 		n, err := connection.Read(buf)
 		if err != nil {
-			fmt.Errorf("Error reading from connection: %s", err)
+			fmt.Printf("Error reading from connection: %s", err)
 			break
 		}
 
@@ -44,22 +83,23 @@ func handleConnection(connection net.Conn) {
 
 		message, err := protocol.Parse(buf[:n])
 		if err != nil {
-			connection.Write([]byte(fmt.Sprintf("-ERR %s", err)))
-			break
+			response(connection, fmt.Errorf("failed to parse message: %w", err))
+			continue
 		}
 
-		command, err := commands.NewCommand(message)
+		command, err := parseCommand(message)
 		if err != nil {
-			connection.Write([]byte(fmt.Sprintf("-ERR falied to parse command: %s", err)))
-			break
+			response(connection, fmt.Errorf("failed to parse command: %s", err))
+			continue
 		}
 
 		result, err := engine.ExecuteCommand(command)
 		if err != nil {
-			connection.Write([]byte(fmt.Sprintf("-ERR falied to execute command: %s", err)))
-			break
+			response(connection, fmt.Errorf("failed to execute commad: %w", err))
+			continue
 		}
-		connection.Write([]byte(result))
+
+		response(connection, result)
 	}
 
 	fmt.Println("Closing connection")

@@ -2,35 +2,56 @@ package engine
 
 import (
 	"errors"
-	"fmt"
+	"strings"
 
-	"github.com/platonoff-dev/yacache/internal/commands"
+	"github.com/platonoff-dev/yacache/internal/engine/commands"
 )
 
 var (
+	ErrEmptyCommand        = errors.New("empty command")
 	ErrUnsuppportedCommand = errors.New("unsupported command")
-
-	SupportedCommands = []string{
-		commands.EchoCommand,
-		commands.PingCommand,
-	}
 )
 
-func ping() string {
-	return "+PONG\r\n"
+type Engine struct {
 }
 
-func echo(text string) string {
-	return fmt.Sprintf("$%d\r\n%s\r\n", len(text), text)
+func New() Engine {
+	return Engine{}
 }
 
-func ExecuteCommand(command *commands.Command) (string, error) {
-	switch command.Identifier {
-	case commands.PingCommand:
-		return ping(), nil
-	case commands.EchoCommand:
-		return echo(command.Args[0]), nil
-	default:
-		return "", ErrUnsuppportedCommand
+func (e *Engine) ExecuteCommand(command commands.Command) (any, error) {
+	if len(command) < 1 {
+		return nil, ErrUnsuppportedCommand
 	}
+
+	switch strings.ToUpper(command[0]) {
+	case commands.PingIdentifier:
+		return e.ping(command)
+	case commands.EchoIdentifier:
+		return e.echo(command)
+	default:
+		return nil, ErrUnsuppportedCommand
+	}
+}
+
+func (e *Engine) ping(command commands.Command) (string, error) {
+	cmd, err := commands.NewPing(command)
+	if err != nil {
+		return "", err
+	}
+
+	if cmd.Message != "" {
+		return cmd.Message, nil
+	}
+
+	return "PONG", nil
+}
+
+func (e *Engine) echo(command commands.Command) (string, error) {
+	cmd, err := commands.NewEcho(command)
+	if err != nil {
+		return "", err
+	}
+
+	return cmd.Message, nil
 }
