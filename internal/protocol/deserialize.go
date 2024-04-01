@@ -45,14 +45,14 @@ func (p *parser) parseLength() (int, error) {
 	return length, nil
 }
 
-func (p *parser) parseArray() ([]interface{}, error) {
+func (p *parser) parseArray() ([]any, error) {
 	length, err := p.parseLength()
 	if err != nil {
 		return nil, err
 		// TODO add details
 	}
 
-	arr := make([]interface{}, length)
+	arr := make([]any, length)
 
 	for i := 0; i < length; i++ {
 		msg, err := p.parseMessage()
@@ -78,7 +78,7 @@ func (p *parser) parseBulkString() (string, error) {
 	return str, nil
 }
 
-func (p *parser) parseMessage() (interface{}, error) {
+func (p *parser) parseMessage() (any, error) {
 	dataTypeidentifier := p.data[p.pos]
 	p.pos += 1
 
@@ -94,7 +94,7 @@ func (p *parser) parseMessage() (interface{}, error) {
 	}
 }
 
-func Parse(data []byte) (interface{}, error) {
+func Parse(data []byte) (any, error) {
 	parser := NewParser(data)
 	return parser.parseMessage()
 }

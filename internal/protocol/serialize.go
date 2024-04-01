@@ -12,7 +12,7 @@ var (
 	ErrNotSerizlizableType = errors.New("type is not serializable")
 )
 
-func Serialize(data interface{}) ([]byte, error) {
+func Serialize(data any) ([]byte, error) {
 	var result string
 	var err error
 

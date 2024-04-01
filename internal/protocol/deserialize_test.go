@@ -10,7 +10,7 @@ func TestParser_ParseMessage(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     []byte
-		expected interface{}
+		expected any
 		err      error
 	}{
 		{
@@ -28,13 +28,13 @@ func TestParser_ParseMessage(t *testing.T) {
 		{
 			name:     "BasicArray",
 			data:     []byte("*2\r\n$4\r\nPING\r\n$4\r\nPONG\r\n"),
-			expected: []interface{}{"PING", "PONG"},
+			expected: []any{"PING", "PONG"},
 			err:      nil,
 		},
 		{
 			name:     "EmptyArray",
 			data:     []byte("*0\r\n"),
-			expected: []interface{}{},
+			expected: []any{},
 			err:      nil,
 		},
 		{

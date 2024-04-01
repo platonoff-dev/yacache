@@ -20,7 +20,7 @@ type Command struct {
 	Args       []string
 }
 
-func NewCommand(message interface{}) (*Command, error) {
+func NewCommand(message any) (*Command, error) {
 	rawCommand, ok := message.([]string)
 	if !ok {
 		return nil, ErrNotCommand

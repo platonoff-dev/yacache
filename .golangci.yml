@@ -5,6 +5,10 @@ run:
 
 issues:
   max-same-issues: 0
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - funlen
 
 linters:
   disable-all: true

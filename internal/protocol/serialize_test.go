@@ -11,7 +11,7 @@ import (
 func TestSerialize(t *testing.T) {
 	tests := []struct {
 		name     string
-		data     interface{}
+		data     any
 		expected []byte
 		err      error
 	}{
